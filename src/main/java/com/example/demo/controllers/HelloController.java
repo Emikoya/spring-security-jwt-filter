@@ -9,6 +9,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/hello")
 public class HelloController {
 
+    @GetMapping("/admin")
+    public String getHelloAdmin() throws Exception {
+        return "hello admin";
+    }
+
+    @GetMapping("/super_admin")
+    public String getHelloSuperAdmin() throws Exception {
+        return "hello super admin";
+    }
+
+    @GetMapping("/user")
+    public String getHelloUser() throws Exception {
+        return "hello user";
+    }
+
     @GetMapping("/public")
     public String getHelloPublic() throws Exception {
         return "hello public";

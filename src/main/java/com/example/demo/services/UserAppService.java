@@ -20,13 +20,13 @@ public class UserAppService {
     @Autowired
     private BCryptPasswordEncoder bcrypt;
 
-    public void createUserApp(UserApp userApp) throws Exception {
+    public void createUserApp(UserApp userApp, String role) throws Exception {
         Optional<UserApp> userAppOptional = userAppRepository.findByUsername(userApp.getUsername());
         if(userAppOptional.isPresent() && bcrypt.matches(userAppOptional.get().getPassword(), userApp.getPassword()) ){
             throw new Exception();
         }
 
-        userAppRepository.save(new UserApp(userApp.getUsername(), bcrypt.encode(userApp.getPassword())));
+        userAppRepository.save(new UserApp(userApp.getUsername(), bcrypt.encode(userApp.getPassword()), role));
     }
 
     public ResponseCookie logUserApp(UserApp userApp) throws Exception {
@@ -35,5 +35,10 @@ public class UserAppService {
             return jwtAuthentificationService.generateToken(userApp.getUsername());
         }
         throw new Exception();
+    }
+
+    public UserApp getUserApp(String username) {
+        return userAppRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé : " + username));
     }
 }

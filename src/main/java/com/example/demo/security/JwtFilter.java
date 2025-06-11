@@ -1,6 +1,8 @@
 package com.example.demo.security;
 
+import com.example.demo.models.UserApp;
 import com.example.demo.services.JwtAuthentificationService;
+import com.example.demo.services.UserAppService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -25,6 +27,9 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtAuthentificationService jwtAuthentificationService;
 
+    @Autowired
+    private UserAppService userAppService;
+
     @Value("${jwt.cookie}")
     private String TOKEN_COOKIE;
 
@@ -37,13 +42,20 @@ public class JwtFilter extends OncePerRequestFilter {
             Stream.of(req.getCookies()).filter(cookie -> cookie.getName().equals(TOKEN_COOKIE)).map(Cookie::getValue)
                     .forEach(token -> {
                         if(jwtAuthentificationService.validateToken(token)) {
-                            UsernamePasswordAuthenticationToken auth =
-                                    new UsernamePasswordAuthenticationToken(
-                                            jwtAuthentificationService.getSubject(token),
-                                            null,
-                                            List.of(new SimpleGrantedAuthority("ROLE_USER"))
-                                    );
-                            SecurityContextHolder.getContext().setAuthentication(auth);
+                            String username = jwtAuthentificationService.getSubject(token);
+                            try {
+                                UserApp userApp = userAppService.getUserApp(username);
+                                UsernamePasswordAuthenticationToken auth =
+                                        new UsernamePasswordAuthenticationToken(
+                                                jwtAuthentificationService.getSubject(token),
+                                                null,
+                                                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                                        );
+                                SecurityContextHolder.getContext().setAuthentication(auth);
+                            } catch (Exception e){
+                                throw new RuntimeException(e);
+                            }
+
                         }
                     });
         }
